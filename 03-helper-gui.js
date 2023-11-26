@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js' 
 
-let scene, camera, renderer, controls, axesHelper, ambientLight, plane, cylinder, spotLight
+let scene, camera, renderer, controls, axesHelper, ambientLight, plane, cylinder, spotLight, gui, spotLightHelper
 
 initRenderer()
 initCamera()
@@ -12,6 +13,8 @@ initAmbientLight()
 initMesh()
 initSpotLight()
 initShadow()
+initSpotLightHelper()
+buildGUI()
 render()
 
 window.addEventListener('resize', function() {
@@ -79,6 +82,38 @@ function initShadow() {
   cylinder.castShadow = true
   spotLight.castShadow = true
   renderer.shadowMap.enabled = true
+}
+
+function initSpotLightHelper() {
+  spotLightHelper = new THREE.SpotLightHelper(spotLight)
+  scene.add(spotLightHelper)
+}
+
+function buildGUI() {
+  gui = new GUI()
+  const spotLightFolder = gui.addFolder('Spot Light')
+  spotLightFolder.addColor(spotLight, 'color').onChange(function(val) {
+    spotLight.color.set(val)
+    render()
+  })
+  spotLightFolder.add(spotLight, 'angle', 0, Math.PI /2).onChange(function(val) {
+    spotLight.angle = val
+    spotLightHelper.update()
+    render()
+  })
+  spotLightFolder.add(spotLight, 'penumbra', 0, 1).onChange(function(val) {
+    spotLight.penumbra = val
+    spotLightHelper.update()
+    render()
+  })
+  spotLightFolder.close()
+  const cameraFolder = gui.addFolder('Camera')
+  cameraFolder.add(camera.position, 'x', -1000, 1000).step(1).onChange(function(val) {
+    camera.position.x = val
+    render()
+  })
+  cameraFolder.close()
+  gui.close()
 }
 function render() {
   renderer.render(scene, camera)
