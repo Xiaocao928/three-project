@@ -301,14 +301,14 @@ composer.addPass( renderPass );
 outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
 composer.addPass( outlinePass );
 
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load( 'textures/tri_pattern.jpg', function ( texture ) {
+// const textureLoader = new THREE.TextureLoader();
+// textureLoader.load( 'textures/tri_pattern.jpg', function ( texture ) {
 
-outlinePass.patternTexture = texture;
-texture.wrapS = THREE.RepeatWrapping;
-texture.wrapT = THREE.RepeatWrapping;
+// outlinePass.patternTexture = texture;
+// texture.wrapS = THREE.RepeatWrapping;
+// texture.wrapT = THREE.RepeatWrapping;
 
-} );
+// } );
 
 const outputPass = new OutputPass();
 composer.addPass( outputPass );

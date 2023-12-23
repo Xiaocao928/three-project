@@ -32,7 +32,7 @@ controls.dampingFactor = 0.05;
  
 // 添加灯光
 
-scene.add( new THREE.AmbientLight( 0xaaaaaa, 0.6 ) );
+scene.add( new THREE.AmbientLight( 0xaaaaaa, 1) );
 
 const light = new THREE.DirectionalLight( 0xddffdd, 2 );
 light.position.set( 1, 1, 1 );
@@ -49,33 +49,6 @@ light.shadow.camera.bottom = - d;
 light.shadow.camera.far = 1000;
 
 scene.add( light )
-const loader1 = new OBJLoader();
-loader1.load( 'models/obj/tree.obj', function ( object ) {
-
-let scale = 1.0;
-
-object.traverse( function ( child ) {
-
-  if ( child instanceof THREE.Mesh ) {
-
-    child.geometry.center();
-    child.geometry.computeBoundingSphere();
-    scale = 0.2 * child.geometry.boundingSphere.radius;
-
-    const phongMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, shininess: 5 } );
-    child.material = phongMaterial;
-    child.receiveShadow = true;
-    child.castShadow = true;
-
-  }
-
-} );
-
-object.position.y = 1;
-object.scale.divideScalar( scale );
-scene.add( object );
-
-} );
 // 添加立方体
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -157,6 +130,11 @@ console.log(Mesh)
 console.log(scene)
 
 } )
+loader.load('http://10.7.0.194:8080/data/gltfModel/各元素部件.gltf', (gltf) => {
+  const model = gltf.scene
+  model.position.set(0, -5, -15)
+  scene.add(model)
+})
 
 // 创建 EffectComposer
 const composer = new EffectComposer(renderer);
@@ -208,11 +186,10 @@ function onDocumentMouseMove(event) {
   raycaster.setFromCamera({ x: mouseX, y: mouseY }, camera);
 
   // 获取与射线相交的物体数组
-  const intersects = raycaster.intersectObjects([cube, scene.children[4]]);
+  const intersects = raycaster.intersectObjects([cube, scene.children[3],scene.children[4]]);
   if ( intersects.length > 0 ) {
     const selectedObject = intersects[ 0 ].object;
     addSelectedObject( selectedObject );
-    console.log(selectedObjects)
     outlinePass.selectedObjects = selectedObjects;
   
   } else {
