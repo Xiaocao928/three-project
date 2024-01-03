@@ -1,7 +1,11 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js' 
+import * as echarts from 'echarts'
+console.log(echarts)
 
 let scene, camera, renderer, controls, axesHelper, ambientLight, plane, cylinder, spotLight
+let extrudeSettings
 
 initRenderer()
 initCamera()
@@ -9,13 +13,11 @@ initScene()
 initAxesHelper()
 initControls()
 initAmbientLight()
-setTimeout(() => {
-  initMesh()
-  initShadow()
-},5000)
-// initMesh()
+initMesh()
+initlabel()
 initSpotLight()
-
+initShadow()
+// animation()
 render()
 
 window.addEventListener('resize', function() {
@@ -73,30 +75,33 @@ function initMesh () {
 
   // 创建shape的平面几何体
   const trackShape = new THREE.Shape()
-  .moveTo( 0.05, 0.05 )
-  .lineTo( 0.05, 20 )
-  .absarc( 0.1, 20, 0.05, Math.PI, 0, true )
-  .lineTo( 0.15, 0.05 )
-  .absarc( 0.1, 0.05, 0.05, 2 * Math.PI, Math.PI, true );
-  const shapeGeometry = new THREE.ShapeGeometry( trackShape );
-  const shapeMaterial = new THREE.MeshPhongMaterial({color: 0x1cd66c})
-  const mesh = new THREE.Mesh(shapeGeometry, shapeMaterial)
+  trackShape.moveTo(0, 0);
+  trackShape.lineTo(50, 0);
+  trackShape.lineTo(50, 50);
+  trackShape.lineTo(0, 50);
+  extrudeSettings = {
+    depth: 20,  // 初始厚度
+    bevelEnabled: false
+  };
+  
+  // 用ExtrudeGeometry挤出三维几何体
+  var shapeGeometry = new THREE.ExtrudeGeometry(trackShape, extrudeSettings);
+  var mesh = new THREE.Mesh(shapeGeometry, new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
   mesh.position.set(4, 0, 0)
   mesh.scale.set (0.05, 0.1, 0.1)
-  // mesh.rotation.y =  Math.PI / 2
-  // 使用 ShapeGeometry 创建几何体
-  const geometry = new THREE.ShapeGeometry(trackShape);
-
-  // 创建材质
-  const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-
-  // 创建线条
-  const line = new THREE.Line(geometry, material);
-
-  // 将线条添加到场景中
-  // scene.add(line);
   scene.add(mesh)
-
+  console.log(mesh)
+  // setTimeout(() => {
+  //   var currentExtrudeSettings  = {
+  //     depth: 40,  // 初始厚度
+  //     bevelEnabled: false
+  //   };
+  //   const shapes = mesh.geometry.parameters.shapes;
+  //   var updatedGeometry = new THREE.ExtrudeGeometry(shapes, currentExtrudeSettings);
+  //   mesh.geometry = updatedGeometry;
+  //   console.log(mesh.geometry)
+  // },3000)
+  animation(mesh)
 // 创建纹理
 const textureLoader = new THREE.TextureLoader();
 const texture = textureLoader.load('http://10.7.0.194:8080/data/texture/floorMaterial.jpeg');
@@ -113,14 +118,22 @@ sprite.position.set(3, 3, 0);
 // 将精灵添加到场景中
 scene.add(sprite);
 // 使用示例
-const bottomColor = new THREE.Color(0xff0000); // 红色
-const middleColor = new THREE.Color(0x00ff00); // 绿色
-const topColor = new THREE.Color(0x0000ff); // 蓝色
+// const bottomColor = new THREE.Color(0xff0000); // 红色
+// const middleColor = new THREE.Color(0x00ff00); // 绿色
+// const topColor = new THREE.Color(0x0000ff); // 蓝色
 
-drawGradientPlane(bottomColor, middleColor, topColor);
+// drawGradientPlane(bottomColor, middleColor, topColor);
 
 }
 
+function animation(mesh) {
+  const scaleKF = new THREE.VectorKeyframeTrack('.scale', [0, 1, 2], [1, 1, 1, 2, 2, 2, 1, 1, 1])
+  const clip = new THREE.AnimationClip('Action', 2, [scaleKF])
+  const mixer = new THREE.AnimationMixer(mesh)
+  // create a ClipAction and set it to play
+  const clipAction = mixer.clipAction(clip)
+  clipAction.play()
+}
 function initSpotLight() {
   spotLight = new THREE.SpotLight(0xffffff, 100000)
   spotLight.position.set(-50, 80, 0)
@@ -134,6 +147,50 @@ function initShadow() {
   cylinder.castShadow = true
   spotLight.castShadow = true
   renderer.shadowMap.enabled = true
+}
+function initlabel() {
+  const echartsOption = {
+    series: [
+      {
+        name: 'Access From',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+          position: 'center',
+          formatter: ''
+        },
+        labelLine: {
+          show: false
+        },
+        data: [
+          { value: 1048, name: '' },
+          { value: 735, name: '' },
+          { value: 580, name: '' },
+          { value: 484, name: '' },
+          { value: 300, name: '' }
+        ]
+      }
+    ]
+  }
+  const echartsContainer = document.createElement('div')
+  echartsContainer.classList = 'echarts-container'
+  echartsContainer.style.width = '300px'
+  echartsContainer.style.height = '200px'
+  console.log(echartsContainer)
+  document.body.appendChild(echartsContainer)
+  const echartsChart = echarts.init(echartsContainer)
+  echartsOption.series[0].label.formatter = `使用率:${(0.25 * 100).toFixed(2)}%`
+  echartsChart.setOption(echartsOption)
+  // const echartsObject = new CSS2DObject(echartsContainer)
+  // echartsObject.position.set(3, 3, 3)
+  // scene.add(echartsObject)
 }
 function render() {
   renderer.render(scene, camera)
