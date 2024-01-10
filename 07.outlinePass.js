@@ -5,6 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 // 创建场景
 const scene = new THREE.Scene();
@@ -17,6 +18,7 @@ camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement)
 
 // 创建倒圆角的平面几何体
 const shape = new THREE.Shape();
@@ -26,8 +28,17 @@ shape.lineTo(50, 50);
 shape.lineTo(50, 0);
 shape.lineTo(10, 0);
 shape.quadraticCurveTo(0, 0, 0, 10); // 添加圆角
+   
+const extrudeSettings = {
+  depth: 1,
+  bevelEnabled: false
+}
 
-const geometry1 = new THREE.ShapeGeometry(shape);
+const geometry1 = new THREE.ExtrudeGeometry(
+  shape,
+  extrudeSettings
+)
+
 
 // 创建材质
 const material1 = new THREE.MeshBasicMaterial({

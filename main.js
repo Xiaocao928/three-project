@@ -1,3 +1,3 @@
 import './style.css'
 
-import './09.animation'
+import './10.logarithmicDepthBuffer'
