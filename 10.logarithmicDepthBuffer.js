@@ -15,7 +15,7 @@ function init() {
     antialias: true,
     // alpha: true,
     precision: 'highp',
-    logarithmicDepthBuffer: false // 设置对数深度缓冲区
+    logarithmicDepthBuffer: true // 设置对数深度缓冲区
   })
   renderer.sortObjects = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,29 +35,52 @@ function initMesh(){
       targetColor: { value: new THREE.Vector3(0.011612245176281512, 0.6724431569510133, 0.1499597898006365) },
       height: { value: height || 0.15 }
     },
-    side: THREE.FrontSide,
+    side: THREE.DoubleSide,
     transparent: true,
-    depthTest: true,
     depthWrite: true,
+    depthTest: true,
     vertexShader: [
       'varying vec3 modelPos;',
+      '#include <common>',
+      '#include <logdepthbuf_pars_vertex>',
       'void main() {',
       '   modelPos = position;',
       '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+      ' #include <logdepthbuf_vertex>',
       '}'
     ].join('\n'),
     fragmentShader: [
+      '#include <common>',
+      '#include <logdepthbuf_pars_fragment>',
       'uniform vec3 baseColor;',
       'uniform vec3 targetColor;',
       'uniform float height;',
       'varying vec3 modelPos;',
       'void main() {',
+      '  #include <logdepthbuf_fragment>',
       '  gl_FragColor = vec4(targetColor.xyz, 1);', // (0.0 - modelPos.z/height)*(0.0 - modelPos.z/height)
       '  if(modelPos.z/height > 0.333 && modelPos.z/height < 0.666) {gl_FragColor = vec4(baseColor.xyz, 1);}',
       '  if(modelPos.z/height > 0.666) {gl_FragColor = vec4(targetColor.xyz, 1);}',
       '}'
     ].join('\n')
   })
+  
+  const redShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {},
+    side: THREE.DoubleSide,
+    depthWrite: true,
+    depthTest: true,
+    vertexShader: [
+      'void main() {',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'void main() {',
+      '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);',  // 设置颜色为红色
+      '}'
+    ].join('\n')
+  });
   const color = new THREE.Vector3(0.7912979403281553, 0.04970656597728775, 0.030713443727452196)
   const mat3 = new THREE.MeshBasicMaterial({
     color: color,
@@ -84,11 +107,12 @@ function initMesh(){
   // 创建 Mesh
   const squareMesh = new THREE.Mesh(squareGeometry, [mat3, mat]);
   squareMesh.scale.set(1, 1, 1);
+  squareMesh.position.set(0, 2, 0);
   squareMesh.renderOrder = 1;
   squareMesh.rotation.x = Math.PI / 2;
   const squareMesh1 = new THREE.Mesh(squareGeometry, [mat3, mat]);
   squareMesh1.scale.set(1, 1, 1);
-  squareMesh1.position.set(1.5, -0.5, 0);
+  squareMesh1.position.set(1.5, 1.5, 0);
   squareMesh1.rotation.y = Math.PI / 2;
   squareMesh1.renderOrder = 1;
 
