@@ -1,3 +1,3 @@
 import './style.css'
 
-import './10.logarithmicDepthBuffer'
+import './12monaco-editor'

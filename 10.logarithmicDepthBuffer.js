@@ -13,7 +13,7 @@ function init() {
   camera.lookAt(0, 0, 0 )
   renderer = new THREE.WebGLRenderer({
     antialias: true,
-    // alpha: true,
+    alpha: false,
     precision: 'highp',
     logarithmicDepthBuffer: true // 设置对数深度缓冲区
   })
@@ -37,6 +37,7 @@ function initMesh(){
     },
     side: THREE.DoubleSide,
     transparent: true,
+    opacity: 0,
     depthWrite: true,
     depthTest: true,
     vertexShader: [
